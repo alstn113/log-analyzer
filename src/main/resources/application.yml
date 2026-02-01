@@ -1,0 +1,12 @@
+spring:
+  servlet:
+    multipart:
+      max-file-size: 50MB # 개별 파일 제한
+      max-request-size: 60MB # 전체 요청 제한
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    display-request-duration: true # 요청/응답 시간 표시
