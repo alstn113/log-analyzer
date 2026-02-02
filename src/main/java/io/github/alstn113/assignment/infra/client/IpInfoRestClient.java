@@ -17,8 +17,8 @@ public class IpInfoRestClient implements IpInfoClient {
     private final IpInfoProperties properties;
 
     @Override
-    @CircuitBreaker(name = "ipInfoApi", fallbackMethod = "getFallback")
     @Retry(name = "ipInfoApi")
+    @CircuitBreaker(name = "ipInfoApi", fallbackMethod = "getFallback")
     @RateLimiter(name = "ipInfoApi")
     public IpInfo fetchIpInfo(String ip) {
         IpInfoResponse response = httpClient.getIpInfo(ip, properties.token());
