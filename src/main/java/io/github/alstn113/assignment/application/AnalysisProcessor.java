@@ -38,11 +38,17 @@ public class AnalysisProcessor {
             updateStatus(analysisId, Analysis::processing);
             AnalysisResult result = execute(fileKey);
             updateStatus(analysisId, analysis -> analysis.complete(result));
+
+            log.info("로그 분석 완료 - analysisId: {}, 총 요청수: {}", analysisId, result.stats().totalRequests());
         } catch (FileProcessingException e) {
             updateStatus(analysisId, analysis -> analysis.fail(e.getMessage()));
+
+            log.warn("로그 분석 실패 (파일 처리 오류) - analysisId: {}, message: {}", analysisId, e.getMessage());
         } catch (Exception e) {
             String message = "알 수 없는 오류로 인해 분석에 실패했습니다";
             updateStatus(analysisId, analysis -> analysis.fail(message));
+
+            log.warn("로그 분석 실패 (알 수 없는 오류) - analysisId: {}", analysisId, e);
         } finally {
             fileStorage.delete(fileKey);
         }

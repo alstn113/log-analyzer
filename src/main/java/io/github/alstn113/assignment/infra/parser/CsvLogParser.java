@@ -37,6 +37,8 @@ public class CsvLogParser implements LogParser {
 
     @Override
     public LogParser.ParseResult parse(File file) {
+        log.info("CSV 로그 파싱 시작 - file: {}", file.getName());
+
         StopWatch stopWatch = new StopWatch("CSV Log Parsing");
         stopWatch.start();
 
@@ -61,8 +63,7 @@ public class CsvLogParser implements LogParser {
                 CSVParser parser = CSVParser.builder()
                         .setReader(reader)
                         .setFormat(format)
-                        .get()
-        ) {
+                        .get()) {
             validateHeader(parser.getHeaderNames());
 
             for (CSVRecord r : parser) {

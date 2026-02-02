@@ -7,8 +7,10 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component("ipInfoRestClient")
 @RequiredArgsConstructor
 public class IpInfoRestClient implements IpInfoClient {
@@ -27,6 +29,7 @@ public class IpInfoRestClient implements IpInfoClient {
     }
 
     private IpInfo getFallback(String ip, Exception e) {
+        log.warn("IP 정보 조회 실패 (Fallback 적용) - ip: {}, message: {}", ip, e.getMessage());
         return IpInfo.unknown(ip);
     }
 }
