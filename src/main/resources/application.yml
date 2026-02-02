@@ -4,6 +4,38 @@ spring:
       max-file-size: 50MB # 개별 파일 제한
       max-request-size: 60MB # 전체 요청 제한
 
+external:
+  ipinfo:
+    base-url: https://ipinfo.io
+    token: ${IPINFO_TOKEN:}
+    cache:
+      max-size: 10000
+      ttl: 24h
+    connection-timeout: 2s
+    read-timeout: 3s
+
+resilience4j:
+  retry:
+    instances:
+      ipInfoApi:
+        max-attempts: 2
+        wait-duration: 100ms
+        enable-exponential-backoff: true
+        exponential-backoff-multiplier: 2
+        retry-exceptions:
+          - io.github.alstn113.assignment.infra.client.exception.IpInfoRetryableException
+  circuitbreaker:
+    instances:
+      ipInfoApi:
+        sliding-window-size: 10
+        failure-rate-threshold: 50
+        wait-duration-in-open-state: 10s
+  ratelimiter:
+    instances:
+      ipInfoApi:
+        limit-for-period: 2000
+        limit-refresh-period: 1s
+
 springdoc:
   api-docs:
     path: /api-docs

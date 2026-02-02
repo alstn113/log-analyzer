@@ -42,5 +42,12 @@ public record LogStatistics(
         public static IpInfo unknown(String ip) {
             return new IpInfo(ip, "UNKNOWN", "UNKNOWN", "UNKNOWN", "UNKNOWN");
         }
+
+        public static String markAsUnknownIfAbsent(String value) {
+            if (value == null || value.isBlank()) {
+                return "UNKNOWN";
+            }
+            return value;
+        }
     }
 }

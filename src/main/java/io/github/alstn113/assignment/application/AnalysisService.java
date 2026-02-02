@@ -13,7 +13,13 @@ public class AnalysisService {
 
     private final AnalysisRepository analysisRepository;
 
-    public SubmitAnalysisResult analyzeLog(MultipartFile file) {}
+    public SubmitAnalysisResult analyzeLog(MultipartFile file) {
+        // TODO:
+        return null;
+    }
 
-    public LogAnalysisResultDto getAnalysis(GetLogAnalysisResultQuery query) {}
+    public LogAnalysisResultDto getResult(GetLogAnalysisResultQuery query) {
+        // TODO:
+        return null;
+    }
 }

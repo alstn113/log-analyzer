@@ -40,7 +40,7 @@ public class AnalysisController implements AnalysisControllerDocs {
             @ModelAttribute @Valid GetLogAnalysisResultParams params
     ) {
         GetLogAnalysisResultQuery query = params.toQuery(analysisId);
-        LogAnalysisResultDto result = analysisService.getAnalysis(query);
+        LogAnalysisResultDto result = analysisService.getResult(query);
 
         return ResponseEntity.ok(ApiResponseDto.success(result));
     }
