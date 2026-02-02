@@ -21,8 +21,8 @@ public record LogAnalysisResultDto(
 
     @Schema(description = "요약 정보")
     public record Summary(
-            @Schema(description = "전체 처리 개수 (정상 + 에러)", example = "182267") long totalCount,
-            @Schema(description = "분석 성공 요청 수 (통계 기준)", example = "182265") long validCount,
+            @Schema(description = "전체 처리 개수 (정상 + 에러)", example = "190426") long totalCount,
+            @Schema(description = "분석 성공 요청 수 (통계 기준)", example = "182264") long validCount,
             @Schema(description = "상태 코드 비율 분포") StatusCodeDistribution statusCodeDistribution) {
         public static Summary from(long totalLines, long validRequests, LogStatistics.StatusCodeStats stats) {
             return new Summary(totalLines, validRequests, LogAnalysisResultDto.StatusCodeDistribution.from(stats));
@@ -56,7 +56,7 @@ public record LogAnalysisResultDto(
     @Schema(description = "상태 코드별 요청 수")
     public record StatusCodeCount(
             @Schema(description = "HTTP 상태 코드", example = "200") int statusCode,
-            @Schema(description = "요청 횟수", example = "114352") long count) {
+            @Schema(description = "요청 횟수", example = "114351") long count) {
         public static StatusCodeCount from(LogStatistics.StatusCodeCount sc) {
             return new StatusCodeCount(sc.statusCode(), sc.count());
         }
@@ -85,8 +85,8 @@ public record LogAnalysisResultDto(
 
     @Schema(description = "파싱 에러 요약")
     public record ParsingErrorSummary(
-            @Schema(description = "파싱 실패 개수", example = "50") int errorCount,
-            @Schema(description = "전체 대비 에러 비율 (%)", example = "0.5") double errorRate) {
+            @Schema(description = "파싱 실패 개수", example = "8162") int errorCount,
+            @Schema(description = "전체 대비 에러 비율 (%)", example = "4.29") double errorRate) {
         public static ParsingErrorSummary of(int errorCount, long totalLines) {
             double rate = totalLines > 0 ? (double) errorCount / totalLines * 100 : 0.0;
             return new ParsingErrorSummary(errorCount, Math.round(rate * 100.0) / 100.0);

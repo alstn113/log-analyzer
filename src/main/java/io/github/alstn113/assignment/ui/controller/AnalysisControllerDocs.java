@@ -79,8 +79,8 @@ public interface AnalysisControllerDocs {
                                 "analysisId": 1,
                                 "status": "COMPLETED",
                                 "summary": {
-                                  "totalCount": 182267,
-                                  "validCount": 182265,
+                                  "totalCount": 190426,
+                                  "validCount": 182264,
                                   "statusCodeDistribution": {
                                     "success2xx": 63,
                                     "redirect3xx": 2.7,
@@ -89,11 +89,29 @@ public interface AnalysisControllerDocs {
                                   }
                                 },
                                 "parsingErrors": {
-                                  "errorCount": 2,
-                                  "errorRate": 0
+                                  "errorCount": 8162,
+                                  "errorRate": 4.29
                                 },
-                                "topPaths": [ { "path": "/", "count": 15240 } ],
-                                "topStatusCodes": [ { "statusCode": 200, "count": 114352 } ],
+                                "topPaths": [
+                                  {
+                                    "path": "/event/banner/mir2/popup",
+                                    "count": 26981
+                                  },
+                                  {
+                                    "path": "/launcher/launcher",
+                                    "count": 24040
+                                  }
+                                ],
+                                "topStatusCodes": [
+                                  {
+                                    "statusCode": 200,
+                                    "count": 114351
+                                  },
+                                  {
+                                    "statusCode": 403,
+                                    "count": 56161
+                                  }
+                                ],
                                 "topIps": [
                                   {
                                     "ip": "120.242.23.238",
@@ -103,6 +121,16 @@ public interface AnalysisControllerDocs {
                                       "region": "Shanghai",
                                       "city": "Shanghai",
                                       "org": "AS9808 China Mobile Communications Group Co., Ltd."
+                                    }
+                                  },
+                                  {
+                                    "ip": "20.249.183.75",
+                                    "count": 13764,
+                                    "ipInfo": {
+                                      "country": "KR",
+                                      "region": "Seoul",
+                                      "city": "Seoul",
+                                      "org": "AS8075 Microsoft Corporation"
                                     }
                                   }
                                 ]
