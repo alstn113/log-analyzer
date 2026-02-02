@@ -18,19 +18,17 @@ import java.util.stream.Collectors;
 
 public class LogAggregator {
 
+    private static final int DEFAULT_TOP_PATHS_N = 100;
+    private static final int DEFAULT_TOP_IPS_N = 100;
+    private static final int DEFAULT_TOP_STATUS_CODES_N = 100;
+
     private LogAggregator() {
     }
 
     /**
      * 로그 엔트리 리스트를 집계하여 통계 정보를 생성한다.
-     *
-     * @param entries 로그 엔트리 리스트
-     * @param topPathsN 상위 N개의 Path
-     * @param topStatusCodesN 상위 N개의 StatusCode
-     * @param topIpsN 상위 N개의 IP
-     * @return 집계된 로그 통계 정보
      */
-    public static LogStatistics aggregate(List<LogEntry> entries, int topPathsN, int topStatusCodesN, int topIpsN) {
+    public static LogStatistics aggregate(List<LogEntry> entries) {
 
         long totalRequests = entries.size();
 
@@ -52,13 +50,13 @@ public class LogAggregator {
         Map<String, Long> ipCounts = entries.stream()
                 .collect(Collectors.groupingBy(LogEntry::clientIp, Collectors.counting()));
 
-        List<PathCount> topPaths = topNEntries(pathCounts, topPathsN).stream()
+        List<PathCount> topPaths = topNEntries(pathCounts, DEFAULT_TOP_PATHS_N).stream()
                 .map(e -> new PathCount(e.getKey(), e.getValue()))
                 .toList();
-        List<StatusCodeCount> topStatusCodes = topNEntries(statusCodeCounts, topStatusCodesN).stream()
+        List<StatusCodeCount> topStatusCodes = topNEntries(statusCodeCounts, DEFAULT_TOP_IPS_N).stream()
                 .map(e -> new StatusCodeCount(e.getKey(), e.getValue()))
                 .toList();
-        List<IpCount> topIps = topNEntries(ipCounts, topIpsN).stream()
+        List<IpCount> topIps = topNEntries(ipCounts, DEFAULT_TOP_STATUS_CODES_N).stream()
                 .map(e -> new IpCount(e.getKey(), e.getValue(), IpInfo.unknown(e.getKey())))
                 .toList();
 
