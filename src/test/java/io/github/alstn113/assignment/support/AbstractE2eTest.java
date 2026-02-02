@@ -5,7 +5,6 @@ import io.restassured.RestAssured;
 import io.restassured.builder.RequestSpecBuilder;
 import io.restassured.builder.ResponseSpecBuilder;
 import io.restassured.filter.log.LogDetail;
-import io.restassured.http.ContentType;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,7 +24,6 @@ public abstract class AbstractE2eTest {
     @BeforeEach
     protected void setUp() {
         RestAssured.requestSpecification = new RequestSpecBuilder()
-                .setContentType(ContentType.JSON)
                 .setPort(port)
                 .log(LogDetail.ALL)
                 .build();
