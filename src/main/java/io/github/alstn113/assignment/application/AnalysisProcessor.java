@@ -27,14 +27,14 @@ public class AnalysisProcessor {
     private final LogParser logParser;
 
     /**
-     * 비동기 방식으로 로그 분석을 처리합니다.
-     * pending -> processing -> completed || failed
+     * 비동기 방식으로 로그 분석을 처리합니다. pending -> processing -> completed || failed
+     * 파일 키로 저장한 임시 파일을 불러와서 분석합니다.
      */
     @Async("analysisTaskExecutor")
-    public void process(Long analysisId, File file) {
+    public void process(Long analysisId, String fileKey) {
         try {
             updateStatus(analysisId, Analysis::processing);
-            AnalysisResult result = execute(file);
+            AnalysisResult result = execute(fileKey);
             updateStatus(analysisId, analysis -> analysis.complete(result));
         } catch (FileProcessingException e) {
             updateStatus(analysisId, analysis -> analysis.fail(e.getMessage()));
@@ -42,19 +42,17 @@ public class AnalysisProcessor {
             String message = "알 수 없는 오류로 인해 분석에 실패했습니다";
             updateStatus(analysisId, analysis -> analysis.fail(message));
         } finally {
-            fileStorage.delete(file);
+            fileStorage.delete(fileKey);
         }
     }
 
-    private AnalysisResult execute(File file) {
+    private AnalysisResult execute(String fileKey) {
+        File file = fileStorage.load(fileKey);
         ParseResult parseResult = logParser.parse(file);
-        List<LogEntry> logEntries = parseResult.logEntries();
-        ParsingErrors parsingErrors = parseResult.parsingErrors();
-
-        LogStatistics stats = LogAggregator.aggregate(logEntries);
+        LogStatistics stats = LogAggregator.aggregate(parseResult.logEntries());
         List<IpCount> enrichedTopIps = ipEnrichmentService.enrich(stats.topIps());
 
-        return new AnalysisResult(stats, enrichedTopIps, parsingErrors);
+        return new AnalysisResult(stats, enrichedTopIps, parseResult.parsingErrors());
     }
 
     private void updateStatus(Long analysisId, UnaryOperator<Analysis> stateTransition) {
