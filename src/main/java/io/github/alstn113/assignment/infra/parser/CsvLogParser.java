@@ -68,7 +68,7 @@ public class CsvLogParser implements LogParser {
                 }
             }
         } catch (IOException e) {
-            throw new FileProcessingException("Failed to process log file", e);
+            throw new FileProcessingException("로그 파싱 중 문제가 생겼습니다.", e);
         }
 
         ParsingErrors parsingErrors = new ParsingErrors(errorCount, errorSamples);

@@ -12,12 +12,12 @@ import org.springframework.util.StopWatch;
 
 @Slf4j
 @Service
-public class IpEnrichService {
+public class IpEnrichmentService {
 
     private final IpInfoClient ipInfoClient;
     private final Executor ipInfoExecutor;
 
-    public IpEnrichService(
+    public IpEnrichmentService(
             IpInfoClient ipInfoClient,
             @Qualifier("ipInfoExecutor") Executor ipInfoExecutor
     ) {
@@ -41,6 +41,9 @@ public class IpEnrichService {
         return result;
     }
 
+    /**
+     * 주어진 IP 목록에 대해 병렬로 외부 API 를 호출하여 IP 정보를 조회합니다.
+     */
     private List<IpCount> fetchIpInfoInParallel(List<IpCount> ips) {
         List<CompletableFuture<IpCount>> futureResults = ips.stream()
                 .map(ip -> CompletableFuture.supplyAsync(() -> fetchAndMap(ip), ipInfoExecutor))

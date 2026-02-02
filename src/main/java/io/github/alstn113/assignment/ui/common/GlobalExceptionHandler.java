@@ -1,5 +1,6 @@
 package io.github.alstn113.assignment.ui.common;
 
+import io.github.alstn113.assignment.application.exception.AnalysisNotFoundException;
 import io.github.alstn113.assignment.domain.BaseException;
 import io.github.alstn113.assignment.ui.common.response.ApiErrorDetail;
 import io.github.alstn113.assignment.ui.common.response.ApiResponseDto;
@@ -22,6 +23,7 @@ public class GlobalExceptionHandler {
         log.warn("BaseException: {}", e.getMessage(), e);
 
         ErrorType errorType = switch (e) {
+            case AnalysisNotFoundException ex -> ErrorType.ANALYSIS_NOT_FOUND;
             default -> ErrorType.BAD_REQUEST;
         };
 
@@ -32,7 +34,7 @@ public class GlobalExceptionHandler {
                 .body(response);
     }
 
-    // @Valid 유효성 검사 실패 예외 처리
+    // 요청 본문 검증 실패 예외 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponseDto<Void>> handleMethodArgumentNotValidException(
             MethodArgumentNotValidException e

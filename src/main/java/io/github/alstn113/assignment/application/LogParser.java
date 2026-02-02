@@ -9,6 +9,6 @@ public interface LogParser {
 
     ParseResult parse(File file);
 
-    record ParseResult(List<LogEntry> entries, ParsingErrors parsingErrors) {
+    record ParseResult(List<LogEntry> logEntries, ParsingErrors parsingErrors) {
     }
 }

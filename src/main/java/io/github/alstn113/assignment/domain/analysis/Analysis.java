@@ -1,5 +1,6 @@
 package io.github.alstn113.assignment.domain.analysis;
 
+import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics;
 import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics.IpCount;
 import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics.PathCount;
 import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics.StatusCodeCount;
@@ -26,4 +27,50 @@ public class Analysis {
     private final List<IpCount> topIps;
     private final ParsingErrors parsingErrors;
 
+    public static Analysis pending() {
+        return Analysis.builder()
+                .status(AnalysisStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .build();
+    }
+
+    public Analysis processing() {
+        return Analysis.builder()
+                .id(this.id)
+                .status(AnalysisStatus.PROCESSING)
+                .createdAt(this.createdAt)
+                .build();
+    }
+
+    public Analysis complete(AnalysisResult result) {
+        return Analysis.builder()
+                .id(this.id)
+                .status(AnalysisStatus.COMPLETED)
+                .createdAt(this.createdAt)
+                .finishedAt(LocalDateTime.now())
+                .totalRequests(result.stats().totalRequests())
+                .statusCodeDistribution(result.stats().statusCodeDistribution())
+                .topPaths(result.stats().topPaths())
+                .topStatusCodes(result.stats().topStatusCodes())
+                .topIps(result.enrichedIps())
+                .parsingErrors(parsingErrors)
+                .build();
+    }
+
+    public Analysis fail(String errorMessage) {
+        return Analysis.builder()
+                .id(this.id)
+                .status(AnalysisStatus.FAILED)
+                .errorMessage(errorMessage)
+                .createdAt(this.createdAt)
+                .finishedAt(LocalDateTime.now())
+                .build();
+    }
+
+    public record AnalysisResult(
+            LogStatistics stats,
+            List<IpCount> enrichedIps,
+            ParsingErrors parsingErrors
+    ) {
+    }
 }
