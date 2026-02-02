@@ -65,6 +65,4 @@ public class AnalysisProcessor {
         Analysis nextState = stateTransition.apply(analysis);
         analysisRepository.update(nextState);
     }
-
-
 }

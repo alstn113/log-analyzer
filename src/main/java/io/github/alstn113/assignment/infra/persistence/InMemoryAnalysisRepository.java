@@ -1,6 +1,8 @@
 package io.github.alstn113.assignment.infra.persistence;
 
 import io.github.alstn113.assignment.application.AnalysisRepository;
+import io.github.alstn113.assignment.application.dto.GetLogAnalysisResultQuery;
+import io.github.alstn113.assignment.application.dto.LogAnalysisResultDto;
 import io.github.alstn113.assignment.domain.analysis.Analysis;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +36,23 @@ public class InMemoryAnalysisRepository implements AnalysisRepository {
         storage.put(id, entity);
     }
 
+    @Override
+    public Optional<Analysis> findById(Long id) {
+        return Optional.ofNullable(storage.get(id))
+                .map(AnalysisEntity::toDomain);
+    }
+
+    @Override
+    public Optional<LogAnalysisResultDto> getLogAnalysisResult(GetLogAnalysisResultQuery query) {
+        return Optional.ofNullable(storage.get(query.analysisId()))
+                .map(entity -> AnalysisEntityMapper.toGetAnalysisResult(
+                        entity,
+                        query.topPaths(),
+                        query.topStatusCodes(),
+                        query.topIps()
+                ));
+    }
+
     private static Analysis saveAnalysis(Analysis analysis, Long id) {
         return Analysis.builder()
                 .id(id)
@@ -48,11 +67,5 @@ public class InMemoryAnalysisRepository implements AnalysisRepository {
                 .topIps(analysis.getTopIps())
                 .parsingErrors(analysis.getParsingErrors())
                 .build();
-    }
-
-    @Override
-    public Optional<Analysis> findById(Long id) {
-        return Optional.ofNullable(storage.get(id))
-                .map(AnalysisEntity::toDomain);
     }
 }

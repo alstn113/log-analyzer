@@ -43,15 +43,16 @@ public class LocalTempFileStorage implements FileStorage {
     }
 
     @Override
-    public void delete(File file) {
-        if (file == null) {
+    public void delete(String key) {
+        if (key == null || key.isBlank()) {
             return;
         }
 
         try {
+            File file = new File(key);
             Files.deleteIfExists(file.toPath());
         } catch (IOException e) {
-            log.warn("Failed to delete temporary file: {}", file.getAbsolutePath(), e);
+            log.warn("임시 파일 삭제 실패: {}", key, e);
         }
     }
 }

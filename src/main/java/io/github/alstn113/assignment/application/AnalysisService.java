@@ -3,6 +3,7 @@ package io.github.alstn113.assignment.application;
 import io.github.alstn113.assignment.application.dto.GetLogAnalysisResultQuery;
 import io.github.alstn113.assignment.application.dto.LogAnalysisResultDto;
 import io.github.alstn113.assignment.application.dto.SubmitAnalysisResult;
+import io.github.alstn113.assignment.application.exception.AnalysisNotFoundException;
 import io.github.alstn113.assignment.domain.analysis.Analysis;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -22,20 +23,18 @@ public class AnalysisService {
      */
     public SubmitAnalysisResult analyzeLog(MultipartFile file) {
         String fileKey = fileStorage.save(file);
-        Analysis analysis = savePendingAnalysis();
+        Analysis pendingAnalysis = analysisRepository.save(Analysis.pending());
 
-        analysisProcessor.process(analysis.getId(), fileKey);
+        analysisProcessor.process(pendingAnalysis.getId(), fileKey);
 
-        return new SubmitAnalysisResult(analysis.getId());
+        return new SubmitAnalysisResult(pendingAnalysis.getId());
     }
 
     public LogAnalysisResultDto getResult(GetLogAnalysisResultQuery query) {
-        // TODO:
-        return null;
-    }
-
-    private Analysis savePendingAnalysis() {
-        Analysis pending = Analysis.pending();
-        return analysisRepository.save(pending);
+        return analysisRepository.getLogAnalysisResult(query)
+                .orElseThrow(() -> {
+                    String message = "분석 결과를 찾을 수 없습니다 (id: %d)".formatted(query.analysisId());
+                    return new AnalysisNotFoundException(message);
+                });
     }
 }
