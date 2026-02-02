@@ -12,7 +12,7 @@ import java.lang.annotation.Target;
 @Constraint(validatedBy = CsvFileValidator.class)
 public @interface ValidCsv {
 
-    String message() default "올바른 CSV 파일 형식이 아닙니다.";
+    String message() default "파일이 비어있거나 CSV 형식이 아닙니다.";
 
     Class<?>[] groups() default {};
 

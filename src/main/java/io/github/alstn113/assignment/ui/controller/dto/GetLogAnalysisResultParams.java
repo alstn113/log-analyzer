@@ -5,15 +5,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import org.hibernate.validator.constraints.Range;
 
 public record GetLogAnalysisResultParams(
-        @Schema(description = "조회할 상위 경로 개수", example = "10", defaultValue = "10")
+        @Schema(description = "조회할 상위 경로 개수 (1-100)", example = "10", defaultValue = "10", minimum = "1", maximum = "100")
         @Range(min = 1, max = 100, message = "topPaths 값은 1에서 100 사이여야 합니다.")
         Integer topPaths,
 
-        @Schema(description = "조회할 상위 상태 코드 개수", example = "10", defaultValue = "10")
+        @Schema(description = "조회할 상위 상태 코드 개수 (1-100)", example = "10", defaultValue = "10", minimum = "1", maximum = "100")
         @Range(min = 1, max = 100, message = "topStatusCodes 값은 1에서 100 사이여야 합니다.")
         Integer topStatusCodes,
 
-        @Schema(description = "조회할 상위 IP 개수", example = "10", defaultValue = "10")
+        @Schema(description = "조회할 상위 IP 개수 (1-100)", example = "10", defaultValue = "10", minimum = "1", maximum = "100")
         @Range(min = 1, max = 100, message = "topIps 값은 1에서 100 사이여야 합니다.")
         Integer topIps
 ) {
