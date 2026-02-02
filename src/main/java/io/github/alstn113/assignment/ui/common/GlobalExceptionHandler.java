@@ -5,6 +5,7 @@ import io.github.alstn113.assignment.domain.BaseException;
 import io.github.alstn113.assignment.ui.common.response.ApiErrorDetail;
 import io.github.alstn113.assignment.ui.common.response.ApiResponseDto;
 import io.github.alstn113.assignment.ui.common.response.ErrorType;
+import jakarta.validation.ConstraintViolationException;
 import java.util.List;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -37,8 +38,7 @@ public class GlobalExceptionHandler {
     // 요청 본문 검증 실패 예외 처리
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ApiResponseDto<Void>> handleMethodArgumentNotValidException(
-            MethodArgumentNotValidException e
-    ) {
+            MethodArgumentNotValidException e) {
         log.warn("MethodArgumentNotValidException : {}", e.getMessage(), e);
 
         List<ApiErrorDetail> errorDetails = e
@@ -46,6 +46,27 @@ public class GlobalExceptionHandler {
                 .map(fieldError -> new ApiErrorDetail(
                         fieldError.getField(),
                         fieldError.getDefaultMessage() != null ? fieldError.getDefaultMessage() : "유효하지 않은 값입니다."))
+                .toList();
+
+        ErrorType errorType = ErrorType.BAD_REQUEST;
+        ApiResponseDto<Void> response = ApiResponseDto.error(errorType, errorDetails);
+
+        return ResponseEntity.status(errorType.getStatus()).body(response);
+    }
+
+    // 파라미터 제약 조건 위반 예외 처리
+    @ExceptionHandler(ConstraintViolationException.class)
+    public ResponseEntity<ApiResponseDto<Void>> handleConstraintViolationException(ConstraintViolationException e) {
+        log.warn("ConstraintViolationException : {}", e.getMessage(), e);
+
+        List<ApiErrorDetail> errorDetails = e.getConstraintViolations().stream()
+                .map(violation -> {
+                    String propertyPath = violation.getPropertyPath().toString();
+                    String fieldName = propertyPath.contains(".")
+                            ? propertyPath.substring(propertyPath.lastIndexOf(".") + 1)
+                            : propertyPath;
+                    return new ApiErrorDetail(fieldName, violation.getMessage());
+                })
                 .toList();
 
         ErrorType errorType = ErrorType.BAD_REQUEST;

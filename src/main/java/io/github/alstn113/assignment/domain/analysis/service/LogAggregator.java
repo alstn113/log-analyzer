@@ -65,7 +65,8 @@ public class LogAggregator {
                 statusCodeStats,
                 topPaths,
                 topStatusCodes,
-                topIps);
+                topIps
+        );
     }
 
     /**

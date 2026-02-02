@@ -6,17 +6,17 @@ import io.github.alstn113.assignment.application.exception.FileProcessingExcepti
 import io.github.alstn113.assignment.domain.analysis.Analysis;
 import io.github.alstn113.assignment.domain.analysis.Analysis.AnalysisResult;
 import io.github.alstn113.assignment.domain.analysis.service.LogAggregator;
-import io.github.alstn113.assignment.domain.analysis.vo.LogEntry;
 import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics;
 import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics.IpCount;
-import io.github.alstn113.assignment.domain.analysis.vo.ParsingErrors;
 import java.io.File;
 import java.util.List;
 import java.util.function.UnaryOperator;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class AnalysisProcessor {
@@ -27,11 +27,13 @@ public class AnalysisProcessor {
     private final LogParser logParser;
 
     /**
-     * 비동기 방식으로 로그 분석을 처리합니다. pending -> processing -> completed || failed
      * 파일 키로 저장한 임시 파일을 불러와서 분석합니다.
+     * 비동기 방식으로 로그 분석을 처리합니다. pending -> processing -> completed || failed
      */
     @Async("analysisTaskExecutor")
     public void process(Long analysisId, String fileKey) {
+        log.info("로그 분석 시작 - analysisId: {}", analysisId);
+
         try {
             updateStatus(analysisId, Analysis::processing);
             AnalysisResult result = execute(fileKey);

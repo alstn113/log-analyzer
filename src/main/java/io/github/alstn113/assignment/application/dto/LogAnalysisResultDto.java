@@ -1,7 +1,6 @@
 package io.github.alstn113.assignment.application.dto;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.github.alstn113.assignment.application.dto.LogAnalysisResultDto.StatusCodeDistribution;
 import io.github.alstn113.assignment.domain.analysis.Analysis;
 import io.github.alstn113.assignment.domain.analysis.AnalysisStatus;
 import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics;
@@ -23,7 +22,7 @@ public record LogAnalysisResultDto(
 
     @Schema(description = "요약 정보")
     public record Summary(
-            @Schema(description = "전체 처리 개수", example = "10050") long totalCount,
+            @Schema(description = "전체 처리 개수 (정상 + 에러)", example = "10050") long totalCount,
             @Schema(description = "분석 성공 요청 수 (통계 기준)", example = "10000") long validCount,
             @Schema(description = "상태 코드 비율 분포") StatusCodeDistribution statusCodeDistribution
     ) {
@@ -32,11 +31,11 @@ public record LogAnalysisResultDto(
         }
     }
 
-    @Schema(description = "상태 코드 비율 분포 (%)")
+    @Schema(description = "상태 코드 비율 분포 (%) - 합계 100%")
     public record StatusCodeDistribution(
-            @Schema(description = "2xx 성공 비율", example = "85.5") double success2xx,
+            @Schema(description = "2xx 성공 비율", example = "85.0") double success2xx,
             @Schema(description = "3xx 리다이렉트 비율", example = "5.0") double redirect3xx,
-            @Schema(description = "4xx 클라이언트 에러 비율", example = "8.0") double clientError4xx,
+            @Schema(description = "4xx 클라이언트 에러 비율", example = "8.5") double clientError4xx,
             @Schema(description = "5xx 서버 에러 비율", example = "1.5") double serverError5xx
     ) {
         public static StatusCodeDistribution from(LogStatistics.StatusCodeStats stats) {
@@ -44,8 +43,7 @@ public record LogAnalysisResultDto(
                     stats.success2xx(),
                     stats.redirect3xx(),
                     stats.clientError4xx(),
-                    stats.serverError5xx()
-            );
+                    stats.serverError5xx());
         }
     }
 
@@ -85,8 +83,8 @@ public record LogAnalysisResultDto(
             @Schema(description = "국가", example = "KR") String country,
             @Schema(description = "지역", example = "Seoul") String region,
             @Schema(description = "도시", example = "Seoul") String city,
-            @Schema(description = "조직/ISP", example = "Korea Telecom") String org
-    ) {
+            @Schema(description = "조직/ISP", example = "Korea Telecom"
+            ) String org) {
         public static IpInfo from(LogStatistics.IpInfo info) {
             return new IpInfo(info.country(), info.region(), info.city(), info.org());
         }
@@ -95,7 +93,7 @@ public record LogAnalysisResultDto(
     @Schema(description = "파싱 에러 요약")
     public record ParsingErrorSummary(
             @Schema(description = "파싱 실패 개수", example = "50") int errorCount,
-            @Schema(description = "전체 대비 에러 비율 (%)", example = "5.0") double errorRate
+            @Schema(description = "전체 대비 에러 비율 (%)", example = "0.5") double errorRate
     ) {
         public static ParsingErrorSummary of(int errorCount, long totalLines) {
             double rate = totalLines > 0 ? (double) errorCount / totalLines * 100 : 0.0;
@@ -131,7 +129,8 @@ public record LogAnalysisResultDto(
                 parsingErrorSummary,
                 topPaths,
                 topStatusCodes,
-                topIps);
+                topIps
+        );
     }
 
     public static LogAnalysisResultDto processing(Long analysisId, AnalysisStatus status) {
@@ -148,17 +147,14 @@ public record LogAnalysisResultDto(
     }
 
     public static LogAnalysisResultDto failed(Long analysisId, String errorMessage) {
-        String safeMessage = "분석 처리 중 서버 내부 오류가 발생했습니다.";
-
         return new LogAnalysisResultDto(
                 analysisId,
                 AnalysisStatus.FAILED,
-                safeMessage,
+                errorMessage,
                 null,
                 null,
                 null,
                 null,
-                null
-        );
+                null);
     }
 }

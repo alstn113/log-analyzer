@@ -36,7 +36,8 @@ public record AnalysisEntity(
                 analysis.getTopPaths(),
                 analysis.getTopStatusCodes(),
                 analysis.getTopIps(),
-                analysis.getParsingErrors());
+                analysis.getParsingErrors()
+        );
     }
 
     public Analysis toDomain() {

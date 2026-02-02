@@ -25,6 +25,7 @@ import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.stereotype.Component;
+import org.springframework.util.StopWatch;
 
 @Slf4j
 @Component
@@ -36,14 +37,17 @@ public class CsvLogParser implements LogParser {
 
     @Override
     public LogParser.ParseResult parse(File file) {
+        StopWatch stopWatch = new StopWatch("CSV Log Parsing");
+        stopWatch.start();
+
         List<LogEntry> entries = new ArrayList<>();
         List<String> errorSamples = new ArrayList<>();
         int errorCount = 0;
 
         CSVFormat format = CSVFormat.DEFAULT.builder()
-                .setHeader(LogSchema.getHeaders())
-                .setSkipHeaderRecord(true)
-                .setIgnoreEmptyLines(true)
+                .setHeader() // 값을 넣으면 헤더를 직접 지정 가능
+                .setSkipHeaderRecord(true) // 첫 번째 행을 헤더로 건너뜀
+                .setIgnoreEmptyLines(true) // 빈 줄 무시
                 .setTrim(true)
                 .get();
 
@@ -59,6 +63,8 @@ public class CsvLogParser implements LogParser {
                         .setFormat(format)
                         .get()
         ) {
+            validateHeader(parser.getHeaderNames());
+
             for (CSVRecord r : parser) {
                 LogEntry entry = parseRecordOrCollect(r, errorSamples);
                 if (entry != null) {
@@ -72,7 +78,21 @@ public class CsvLogParser implements LogParser {
         }
 
         ParsingErrors parsingErrors = new ParsingErrors(errorCount, errorSamples);
-        return new LogParser.ParseResult(entries, parsingErrors);
+        ParseResult result = new ParseResult(entries, parsingErrors);
+
+        stopWatch.stop();
+        log.info("CSV 로그 파싱 완료: {} 건 처리, {} 건 오류, 소요 시간 {} ms",
+                entries.size(), errorCount, stopWatch.getTotalTimeMillis());
+
+        return result;
+    }
+
+    private void validateHeader(List<String> actualHeaders) {
+        List<String> expectedHeaders = Arrays.asList(LogSchema.getHeaders());
+        if (!actualHeaders.equals(expectedHeaders)) {
+            log.warn("CSV 파일 헤더 불일치. 예상: {}, 실제: {}", expectedHeaders, actualHeaders);
+            throw new FileProcessingException("CSV 파일의 헤더가 기대값과 다릅니다");
+        }
     }
 
     private LogEntry parseRecordOrCollect(CSVRecord r, List<String> errorSamples) {
@@ -80,9 +100,9 @@ public class CsvLogParser implements LogParser {
             return parseRecord(r);
         } catch (Exception e) {
             if (errorSamples.size() < MAX_ERROR_SAMPLES) {
-                errorSamples.add("Line %d: %s (Error: %s)".formatted(r.getRecordNumber(), r, e.getMessage()));
+                errorSamples.add("라인 %d: %s (예외: %s)".formatted(r.getRecordNumber(), r, e.getMessage()));
             }
-            log.warn("Log parsing failed at line {}", r.getRecordNumber(), e);
+            log.warn("로그 파싱 중 오류 발생 - 라인 {}: {}, 예외: {}", r.getRecordNumber(), r, e.getMessage());
             return null;
         }
     }
@@ -100,8 +120,7 @@ public class CsvLogParser implements LogParser {
                 Long.parseLong(r.get(LogSchema.SENT_BYTES.getHeader())),
                 Math.round(Double.parseDouble(r.get(LogSchema.CLIENT_RESPONSE_TIME.getHeader())) * 1000), // ms로 변환
                 r.get(LogSchema.SSL_PROTOCOL.getHeader()),
-                r.get(LogSchema.ORIGINAL_REQUEST_URI_WITH_ARGS.getHeader())
-        );
+                r.get(LogSchema.ORIGINAL_REQUEST_URI_WITH_ARGS.getHeader()));
     }
 
     private LocalDateTime parseDateTime(String value) {

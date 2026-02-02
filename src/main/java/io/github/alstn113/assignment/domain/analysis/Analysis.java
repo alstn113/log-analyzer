@@ -53,7 +53,7 @@ public class Analysis {
                 .topPaths(result.stats().topPaths())
                 .topStatusCodes(result.stats().topStatusCodes())
                 .topIps(result.enrichedIps())
-                .parsingErrors(parsingErrors)
+                .parsingErrors(result.parsingErrors())
                 .build();
     }
 

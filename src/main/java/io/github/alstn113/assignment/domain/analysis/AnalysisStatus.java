@@ -6,5 +6,4 @@ public enum AnalysisStatus {
     PROCESSING,
     COMPLETED,
     FAILED,
-    ;
 }

@@ -5,7 +5,6 @@ import io.github.alstn113.assignment.application.exception.FileProcessingExcepti
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
-import java.util.UUID;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -17,13 +16,13 @@ public class LocalTempFileStorage implements FileStorage {
     @Override
     public String save(MultipartFile file) {
         try {
-            String tempFileName = "upload-" + UUID.randomUUID() + "-" + file.getOriginalFilename();
+            String tempFileName = "upload-%s".formatted(file.getOriginalFilename());
             File tempFile = File.createTempFile(tempFileName, null);
             file.transferTo(tempFile);
 
             return tempFile.getAbsolutePath();
         } catch (IOException e) {
-            throw new FileProcessingException("Failed to save temporary file: " + e.getMessage(), e);
+            throw new FileProcessingException("파일을 저장하는데 실패했습니다", e);
         }
     }
 
