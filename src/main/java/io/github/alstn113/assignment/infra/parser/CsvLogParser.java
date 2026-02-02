@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import lombok.Getter;
@@ -40,7 +41,7 @@ public class CsvLogParser implements LogParser {
         int errorCount = 0;
 
         CSVFormat format = CSVFormat.DEFAULT.builder()
-                .setHeader()
+                .setHeader(LogSchema.getHeaders())
                 .setSkipHeaderRecord(true)
                 .setIgnoreEmptyLines(true)
                 .setTrim(true)
@@ -124,5 +125,11 @@ public class CsvLogParser implements LogParser {
         ORIGINAL_REQUEST_URI_WITH_ARGS("OriginalRequestUriWithArgs");
 
         private final String header;
+
+        public static String[] getHeaders() {
+            return Arrays.stream(values())
+                    .map(LogSchema::getHeader)
+                    .toArray(String[]::new);
+        }
     }
 }
