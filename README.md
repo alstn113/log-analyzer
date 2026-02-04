@@ -2,7 +2,7 @@
 
 ## 목차
 
-- [1. 프로젝트 개요](#1-프로젝트-개요)
+- [1. 프로젝트 설명](#1-프로젝트-설명)
 - [2. 기술 스택](#2-기술-스택)
 - [3. 실행 방법](#3-실행-방법)
 - [4. 시스템 설계 및 구현](#4-시스템-설계-및-구현)
@@ -66,6 +66,11 @@ Swagger UI: http://localhost:8080/swagger-ui/index.html
 - 패키지 구조:
   - DDD 기반 계층형 아키텍처를 채택하여 `ui`, `application`, `domain`, `infra` 계층으로 분리
   - `application` 계층에서 외부 기술인 `infra` 계층에 대한 의존하지 않도록 인터페이스를 정의하고, `infra` 계층에서 이를 구현하도록 설계 (DIP 원칙 준수)
+
+<p align="center">
+  <img height="500" alt="구조도" src="https://github.com/user-attachments/assets/306b4ceb-b231-4514-8000-2f085a0344f1" />
+</p>
+  
 - 핵심 로직 설계:
   - 분석 요청 처리:
     - 비동기 방식으로 분석 작업을 처리하여 빠른 응답 제공
@@ -85,7 +90,11 @@ Swagger UI: http://localhost:8080/swagger-ui/index.html
 Swagger UI: http://localhost:8080/swagger-ui/index.html
 
 <details>
-<summary>로그 파일 업로드 및 분석 요청 "POST: /analysis"</summary>
+<summary>로그 파일 업로드 및 분석 요청 "POST /analysis"</summary>
+
+<p align="center">
+  <img height="500" alt="POST" src="https://github.com/user-attachments/assets/73efdb2e-effb-49ba-8abd-96ff3ebba38b" />
+</p>
 
 로그 파일을 업로드하여 분석 작업을 시작합니다. 분석은 비동기로 진행되며, 요청 즉시 분석 ID(`analysisId`)를 반환합니다. 비어있는 파일이거나 CSV 형식이 아닌 파일, 헤더가 잘못된 파일에 대해서 예외를 반환합니다. 로그 분석 후 상위 100개에 대한 IP 정보 조회를 위해 외부 API를 호출합니다.
 
@@ -116,6 +125,11 @@ Swagger UI: http://localhost:8080/swagger-ui/index.html
 
 <details>
 <summary>로그 분석 결과 조회 "GET /analysis/{analysisId}"</summary>
+
+<p align="center">
+  <img height="500" alt="GET" src="https://github.com/user-attachments/assets/cb25c7d7-7964-433c-a6eb-4d29ca4e1236" />
+</p>
+
 
 발급받은 분석 ID를 통해 분석 상태와 결과를 조회합니다. 분석이 완료(`COMPLETED`)되면 상세 통계 정보를 포함하며, 진행 중(`PROCESSING`)이거나 대기 중(`PENDING`)일 때는 상태 정보만 반환됩니다. 분석 실패(`FAILED`)한 경우 결과에 에러 메세지를 포함합니다.
 
