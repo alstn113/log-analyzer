@@ -24,7 +24,7 @@ class LogAggregatorTest {
         List<LogEntry> entries = List.of(entry1, entry2, entry3, entry4, entry5);
 
         // when
-        LogStatistics stats = LogAggregator.aggregate(entries);
+        LogStatistics stats = LogAggregator.aggregate(entries.stream());
 
         // then
         assertThat(stats.totalRequests()).isEqualTo(5);

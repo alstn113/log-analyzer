@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
-import java.util.stream.Collectors;
 
 public class LogAggregator {
 
@@ -26,47 +25,68 @@ public class LogAggregator {
     }
 
     /**
-     * 로그 엔트리 리스트를 집계하여 통계 정보를 생성한다.
+     * 로그 엔트리 스트림을 순회하며 통계 정보를 생성한다.
+     * 메모리 효율을 위해 스트림을 한 번만 순회하며 모든 통계를 집계한다.
      */
-    public static LogStatistics aggregate(List<LogEntry> entries) {
+    public static LogStatistics aggregate(java.util.stream.Stream<LogEntry> stream) {
+        StatsAccumulator accumulator = new StatsAccumulator();
+        stream.forEach(accumulator::accumulate);
+        return accumulator.build();
+    }
 
-        long totalRequests = entries.size();
+    private static class StatsAccumulator {
+        private long totalRequests = 0;
+        private long success = 0;
+        private long redirect = 0;
+        private long clientError = 0;
+        private long serverError = 0;
 
-        long success = entries.stream().filter(LogEntry::isSuccess).count();
-        long redirect = entries.stream().filter(LogEntry::isRedirect).count();
-        long clientError = entries.stream().filter(LogEntry::isClientError).count();
-        long serverError = entries.stream().filter(LogEntry::isServerError).count();
+        private final Map<String, Long> pathCounts = new java.util.HashMap<>();
+        private final Map<Integer, Long> statusCodeCounts = new java.util.HashMap<>();
+        private final Map<String, Long> ipCounts = new java.util.HashMap<>();
 
-        StatusCodeStats statusCodeStats = new StatusCodeStats(
-                ratio(success, totalRequests),
-                ratio(redirect, totalRequests),
-                ratio(clientError, totalRequests),
-                ratio(serverError, totalRequests));
+        void accumulate(LogEntry entry) {
+            totalRequests++;
 
-        Map<String, Long> pathCounts = entries.stream()
-                .collect(Collectors.groupingBy(LogEntry::requestUri, Collectors.counting()));
-        Map<Integer, Long> statusCodeCounts = entries.stream()
-                .collect(Collectors.groupingBy(LogEntry::httpStatus, Collectors.counting()));
-        Map<String, Long> ipCounts = entries.stream()
-                .collect(Collectors.groupingBy(LogEntry::clientIp, Collectors.counting()));
+            if (entry.isSuccess()) {
+                success++;
+            } else if (entry.isRedirect()) {
+                redirect++;
+            } else if (entry.isClientError()) {
+                clientError++;
+            } else if (entry.isServerError()) {
+                serverError++;
+            }
 
-        List<PathCount> topPaths = topNEntries(pathCounts, DEFAULT_TOP_PATHS_N).stream()
-                .map(e -> new PathCount(e.getKey(), e.getValue()))
-                .toList();
-        List<StatusCodeCount> topStatusCodes = topNEntries(statusCodeCounts, DEFAULT_TOP_IPS_N).stream()
-                .map(e -> new StatusCodeCount(e.getKey(), e.getValue()))
-                .toList();
-        List<IpCount> topIps = topNEntries(ipCounts, DEFAULT_TOP_STATUS_CODES_N).stream()
-                .map(e -> new IpCount(e.getKey(), e.getValue(), IpInfo.unknown(e.getKey())))
-                .toList();
+            pathCounts.merge(entry.requestUri(), 1L, Long::sum);
+            statusCodeCounts.merge(entry.httpStatus(), 1L, Long::sum);
+            ipCounts.merge(entry.clientIp(), 1L, Long::sum);
+        }
 
-        return new LogStatistics(
-                totalRequests,
-                statusCodeStats,
-                topPaths,
-                topStatusCodes,
-                topIps
-        );
+        LogStatistics build() {
+            StatusCodeStats statusCodeStats = new StatusCodeStats(
+                    ratio(success, totalRequests),
+                    ratio(redirect, totalRequests),
+                    ratio(clientError, totalRequests),
+                    ratio(serverError, totalRequests));
+
+            List<PathCount> topPaths = topNEntries(pathCounts, DEFAULT_TOP_PATHS_N).stream()
+                    .map(e -> new PathCount(e.getKey(), e.getValue()))
+                    .toList();
+            List<StatusCodeCount> topStatusCodes = topNEntries(statusCodeCounts, DEFAULT_TOP_IPS_N).stream()
+                    .map(e -> new StatusCodeCount(e.getKey(), e.getValue()))
+                    .toList();
+            List<IpCount> topIps = topNEntries(ipCounts, DEFAULT_TOP_STATUS_CODES_N).stream()
+                    .map(e -> new IpCount(e.getKey(), e.getValue(), IpInfo.unknown(e.getKey())))
+                    .toList();
+
+            return new LogStatistics(
+                    totalRequests,
+                    statusCodeStats,
+                    topPaths,
+                    topStatusCodes,
+                    topIps);
+        }
     }
 
     /**
@@ -102,4 +122,3 @@ public class LogAggregator {
         return result;
     }
 }
-

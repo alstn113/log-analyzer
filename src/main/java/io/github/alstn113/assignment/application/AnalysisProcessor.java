@@ -1,6 +1,6 @@
 package io.github.alstn113.assignment.application;
 
-import io.github.alstn113.assignment.application.LogParser.ParseResult;
+import io.github.alstn113.assignment.application.LogParser.LogStream;
 import io.github.alstn113.assignment.application.exception.AnalysisNotFoundException;
 import io.github.alstn113.assignment.application.exception.FileProcessingException;
 import io.github.alstn113.assignment.domain.analysis.Analysis;
@@ -8,6 +8,7 @@ import io.github.alstn113.assignment.domain.analysis.Analysis.AnalysisResult;
 import io.github.alstn113.assignment.domain.analysis.service.LogAggregator;
 import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics;
 import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics.IpCount;
+import io.github.alstn113.assignment.domain.analysis.vo.ParsingErrors;
 import java.io.File;
 import java.util.List;
 import java.util.function.UnaryOperator;
@@ -56,11 +57,18 @@ public class AnalysisProcessor {
 
     private AnalysisResult execute(String fileKey) {
         File file = fileStorage.load(fileKey);
-        ParseResult parseResult = logParser.parse(file);
-        LogStatistics stats = LogAggregator.aggregate(parseResult.logEntries());
-        List<IpCount> enrichedTopIps = ipEnrichmentService.enrich(stats.topIps());
 
-        return new AnalysisResult(stats, enrichedTopIps, parseResult.parsingErrors());
+        try (LogStream logStream = logParser.parse(file)) {
+            long start = System.currentTimeMillis();
+            LogStatistics stats = LogAggregator.aggregate(logStream.logEntries());
+            long duration = System.currentTimeMillis() - start;
+            log.info("CSV 로그 분석 시간: {} ms", duration);
+
+            List<IpCount> enrichedTopIps = ipEnrichmentService.enrich(stats.topIps());
+            ParsingErrors parsingErrors = logStream.parsingErrors();
+
+            return new AnalysisResult(stats, enrichedTopIps, parsingErrors);
+        }
     }
 
     private void updateStatus(Long analysisId, UnaryOperator<Analysis> stateTransition) {

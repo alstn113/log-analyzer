@@ -19,8 +19,7 @@ public class IpEnrichmentService {
 
     public IpEnrichmentService(
             IpInfoClient ipInfoClient,
-            @Qualifier("ipInfoExecutor") Executor ipInfoExecutor
-    ) {
+            @Qualifier("ipInfoExecutor") Executor ipInfoExecutor) {
         this.ipInfoClient = ipInfoClient;
         this.ipInfoExecutor = ipInfoExecutor;
     }

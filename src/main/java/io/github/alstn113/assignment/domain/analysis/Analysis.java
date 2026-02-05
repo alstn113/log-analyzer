@@ -48,6 +48,7 @@ public class Analysis {
                 .status(AnalysisStatus.COMPLETED)
                 .createdAt(this.createdAt)
                 .finishedAt(LocalDateTime.now())
+                .finishedAt(LocalDateTime.now())
                 .totalRequests(result.stats().totalRequests())
                 .statusCodeDistribution(result.stats().statusCodeDistribution())
                 .topPaths(result.stats().topPaths())
@@ -70,7 +71,6 @@ public class Analysis {
     public record AnalysisResult(
             LogStatistics stats,
             List<IpCount> enrichedIps,
-            ParsingErrors parsingErrors
-    ) {
+            ParsingErrors parsingErrors) {
     }
 }
