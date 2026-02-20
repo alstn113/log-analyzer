@@ -36,34 +36,45 @@ public class CsvLogParser implements LogParser {
                 .setTrim(true)
                 .get();
 
+        InputStream bomStripped = null;
+        BufferedReader reader = null;
         CSVParser parser = null;
+
         try {
-            InputStream bomStripped = BOMInputStream.builder()
+            bomStripped = BOMInputStream.builder()
                     .setFile(file)
                     .setByteOrderMarks(ByteOrderMark.UTF_8)
                     .setInclude(false)
                     .get();
-            BufferedReader reader = new BufferedReader(new InputStreamReader(bomStripped, StandardCharsets.UTF_8));
-
-            // 1. Parser 생성 (여기서 헤더 읽기를 시도할 수 있음)
+            reader = new BufferedReader(new InputStreamReader(bomStripped, StandardCharsets.UTF_8));
             parser = CSVParser.builder()
                     .setReader(reader)
                     .setFormat(format)
                     .get();
 
-            // 2. 헤더 검증
             validateHeader(parser.getHeaderNames());
 
-            // 3. 성공 시 스트림 반환 (리소스 소유권 이전)
+            // 리소스 소유권을 이동하므로 밖에서 리소스를 해제하도록 처리
+            // 이 메서드에서 예외 발생 시 catch 블록에서 리소스 정리
             return new CsvLogStream(parser, mapper);
-
         } catch (Exception e) {
-            // 실패 시 생성된 리소스 정리
             if (parser != null) {
                 try {
                     parser.close();
                 } catch (IOException ex) {
-                    log.warn("파서 종료 중 오류", ex);
+                    log.warn("파서 종료 오류", ex);
+                }
+            } else if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    log.warn("리더 종료 오류", ex);
+                }
+            } else if (bomStripped != null) {
+                try {
+                    bomStripped.close();
+                } catch (IOException ex) {
+                    log.warn("스트림 종료 오류", ex);
                 }
             }
             throw new FileProcessingException("로그 파싱 중 문제가 생겼습니다.", e);

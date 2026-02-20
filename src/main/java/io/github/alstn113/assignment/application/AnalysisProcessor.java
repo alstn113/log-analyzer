@@ -58,17 +58,21 @@ public class AnalysisProcessor {
     private AnalysisResult execute(String fileKey) {
         File file = fileStorage.load(fileKey);
 
+        LogStatistics stats;
+        ParsingErrors parsingErrors;
+
+        // 파일 I/O 중 네트워크 I/O로 인해 파일 리소스가 점유되는 것을 방지하기 위해 분리
         try (LogStream logStream = logParser.parse(file)) {
             long start = System.currentTimeMillis();
-            LogStatistics stats = LogAggregator.aggregate(logStream.logEntries());
+            stats = LogAggregator.aggregate(logStream.logEntries());
+            parsingErrors = logStream.parsingErrors();
             long duration = System.currentTimeMillis() - start;
             log.info("CSV 로그 분석 시간: {} ms", duration);
-
-            List<IpCount> enrichedTopIps = ipEnrichmentService.enrich(stats.topIps());
-            ParsingErrors parsingErrors = logStream.parsingErrors();
-
-            return new AnalysisResult(stats, enrichedTopIps, parsingErrors);
         }
+
+        List<IpCount> enrichedTopIps = ipEnrichmentService.enrich(stats.topIps());
+
+        return new AnalysisResult(stats, enrichedTopIps, parsingErrors);
     }
 
     private void updateStatus(Long analysisId, UnaryOperator<Analysis> stateTransition) {

@@ -10,10 +10,12 @@ import io.github.alstn113.assignment.domain.analysis.vo.LogStatistics.StatusCode
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.PriorityQueue;
+import java.util.stream.Stream;
 
 public class LogAggregator {
 
@@ -28,7 +30,7 @@ public class LogAggregator {
      * 로그 엔트리 스트림을 순회하며 통계 정보를 생성한다.
      * 메모리 효율을 위해 스트림을 한 번만 순회하며 모든 통계를 집계한다.
      */
-    public static LogStatistics aggregate(java.util.stream.Stream<LogEntry> stream) {
+    public static LogStatistics aggregate(Stream<LogEntry> stream) {
         StatsAccumulator accumulator = new StatsAccumulator();
         stream.forEach(accumulator::accumulate);
         return accumulator.build();
@@ -41,9 +43,9 @@ public class LogAggregator {
         private long clientError = 0;
         private long serverError = 0;
 
-        private final Map<String, Long> pathCounts = new java.util.HashMap<>();
-        private final Map<Integer, Long> statusCodeCounts = new java.util.HashMap<>();
-        private final Map<String, Long> ipCounts = new java.util.HashMap<>();
+        private final Map<String, Long> pathCounts = new HashMap<>();
+        private final Map<Integer, Long> statusCodeCounts = new HashMap<>();
+        private final Map<String, Long> ipCounts = new HashMap<>();
 
         void accumulate(LogEntry entry) {
             totalRequests++;

@@ -18,7 +18,7 @@ resilience4j:
   retry:
     instances:
       ipInfoApi:
-        max-attempts: 2
+        max-attempts: 2 # 최대 재시도 횟수 (1회 재시도)
         wait-duration: 500ms
         enable-exponential-backoff: true
         exponential-backoff-multiplier: 2
